@@ -1,4 +1,4 @@
-import { Grid, GridItem, Show } from "@chakra-ui/react"
+import { Grid, GridItem } from "@chakra-ui/react"
 import NavBar from "./NavBar"
 import BookList from "./BookList"
 
@@ -11,9 +11,7 @@ function Index() {
     <GridItem area='nav'>
       <NavBar />
     </GridItem>
-    {/* <Show above="lg">    
-    <GridItem area='aside'>Aside</GridItem>
-    </Show> */}
+   
     <GridItem area='main'><BookList/></GridItem>
   </Grid>
 }

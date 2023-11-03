@@ -5,13 +5,9 @@ import { useAuth0 } from '@auth0/auth0-react';
 import { MouseEventHandler } from 'react';
 
 const NavBar = () => {
-  const { loginWithPopup, loginWithRedirect, logout, user, isAuthenticated } =
+  const { loginWithRedirect, logout, isAuthenticated } =
   useAuth0();
 
-// Define click handlers with the correct type
-const handleLoginWithPopup: MouseEventHandler<HTMLButtonElement> = () => {
-  loginWithPopup();
-};
 
 const handleLoginWithRedirect: MouseEventHandler<HTMLButtonElement> = () => {
   loginWithRedirect();

@@ -8,116 +8,94 @@ import {
   Th,
   Thead,
   Tr,
-  Input,
   Text,
   Center,
 } from "@chakra-ui/react";
 import DeleteConfirmationModal from "../common/DeleteConfirmationModal";
 import EditBookModal from "../common/EditBookModal";
 import AddBookModal from "../common/AddBookModal";
-import{useQuery,useMutation} from "@apollo/client"
+import{useQuery} from "@apollo/client"
+import { GET_ALL_BOOKS, } from "../../services/graphql";
 import {useAuth0} from "@auth0/auth0-react"
 
-interface Book {
-  id: number;
-  name: string;
-  description: string;
-}
+// interface Book {
+//   id: number;
+//   name: string;
+//   description: string;
+// }
 
 function BookList() {
-  const [books, setBooks] = useState<Book[]>([
-    { id: 1, name: "Book 1", description: "Description 1" },
-    { id: 2, name: "Book 2", description: "Description 2" },
-    // Add more books here.
-  ]);
+const {user}=useAuth0();
 
-  const [newBook, setNewBook] = useState<Book>({ id: 0, name: "", description: "" });
-  const [deleteBookId, setDeleteBookId] = useState<number | null>(null);
-  const [editBookId, setEditBookId] = useState<number | null>(null);
-  const [editBookName, setEditBookName] = useState<string>("");
-  const [editBookDescription, setEditBookDescription] = useState<string>("");
-  const [searchTerm, setSearchTerm] = useState<string>("");
+const { loading, error, data } = useQuery(GET_ALL_BOOKS,{
+  variables:{userId:user?.sub}
+});
+
+
   const [isAddingBook, setIsAddingBook] = useState<boolean>(false);
-
-  const [user1, setUser1] = useState<{ user1name: string } | null>(null);
-
-  const handleSearch = () => {
-    const searchTermLower = searchTerm.toLowerCase();
-    const filteredBooks = books.filter(
-      (book) => book.name.toLowerCase().includes(searchTermLower) || book.description.toLowerCase().includes(searchTermLower)
-    );
-    setBooks(filteredBooks);
-  };
+  const[isEditingBook,setIsEditingBook]=useState<boolean>(false);
 
   const addNewBook = () => {
     setIsAddingBook(true);
   };
 
-  const markForDeletion = (id: number) => {
-    setDeleteBookId(id);
+  const [bookToEdit,setBookToEdit]=useState({
+    id:"",
+    title:"",
+    description:""
+  })
+
+  const [bookId,setBookId]=useState<string>(
+    ""
+  );
+  const [deleteModal,setDeleteModal]=useState(false)
+  
+  // const editBook=()=>{
+  //   setIsEditingBook(true)
+  // }
+  const markForDeletion = (id: string) => {
+      setBookId(id)
+      setDeleteModal(true);
   };
 
   const cancelDeletion = () => {
-    setDeleteBookId(null);
+    setDeleteModal(false);
   };
 
   const confirmDeletion = () => {
-    if (deleteBookId !== null) {
-      setBooks(books.filter((book) => book.id !== deleteBookId));
-      setDeleteBookId(null);
-    }
+    // if (deleteBookId !== null) {
+    //   setBooks(books.filter((book) => book.id !== deleteBookId));
+    //   setDeleteBookId(null);
+    // }
   };
 
-  const openEditModal = (id: number, name: string, description: string) => {
-    setEditBookId(id);
-    setEditBookName(name);
-    setEditBookDescription(description);
+  const openEditModal = ( id:string,title: string, description: string) => {
+    setBookToEdit({id,title,description});
+    setIsEditingBook(true)
+
   };
+ 
 
   const closeEditModal = () => {
-    setEditBookId(null);
+    setIsEditingBook(false)
   };
 
-  const updateBookDetails = () => {
-    if (editBookId !== null) {
-      const updatedBooks = books.map((book) =>
-        book.id === editBookId
-          ? { ...book, name: editBookName, description: editBookDescription }
-          : book
-      );
-      setBooks(updatedBooks);
-      setEditBookId(null);
-    }
-  };
-  const{user}=useAuth0()
+  if (loading) return <p>Loading...</p>;
+  if (error) return <p>Error: {error.message}</p>;
   return (
     <div>
       <Center>
         <Text fontSize="2xl">{JSON.stringify(user?.email,null,2)}Library</Text>
       </Center>
       <Center>
-        <Box borderWidth="1px" borderColor="blue.500" backgroundColor="white" padding="10px" margin="10px" display="flex" width="50%">
-        {user1 ? (
-          <Text fontSize="lg">Welcome, {user1.user1name}</Text>
-        ) : null}
-        {user1 ? (
-          <Button colorScheme="red" onClick={() => setUser1(null)}>Logout</Button>
-        ) : null}
-          <Input placeholder="Search for a book" value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} />
-          <Button colorScheme="blue" onClick={handleSearch} marginLeft="10px">
-            Search
-          </Button>
-          <Button colorScheme="blue" onClick={addNewBook} marginLeft="10px" width="180px">
+        <Box borderWidth="1px" borderColor="blue.500" backgroundColor="white" padding="10px" margin="10px" display="flex" width="50%">  
+         <Button colorScheme="blue" onClick={addNewBook} marginLeft="10px" width="180px">
         Add new book
-      </Button>
-
+      </Button> 
       <AddBookModal
         isOpen={isAddingBook}
         onClose={() => setIsAddingBook(false)}
-        onAddBook={(newBook) => {
-          setBooks([...books, { id: books.length + 1, ...newBook }]);
-          setNewBook({ id: 0, name: "", description: "" });
-        }}
+        userId={user?.sub}
       />
         </Box>
       </Center>
@@ -125,19 +103,19 @@ function BookList() {
         <Thead>
           <Tr>
             <Th>ID</Th>
-            <Th>Name</Th>
+            <Th>Title</Th>
             <Th>Description</Th>
             <Th></Th>
           </Tr>
         </Thead>
         <Tbody>
-          {books.map((book) => (
+          {data.Books.map((book:{id:string,title:string,description:string}) => (
             <Tr key={book.id}>
               <Td>{book.id}</Td>
-              <Td>{book.name}</Td>
+              <Td>{book.title}</Td>
               <Td>{book.description}</Td>
               <Td>
-                <Button colorScheme="blue" marginRight="5px" width="25px" height="30px" onClick={() => openEditModal(book.id, book.name, book.description)}>
+                <Button colorScheme="blue" marginRight="5px" width="25px" height="30px" onClick={() => openEditModal(book.id,book.title,book.description)}>
                   Edit
                 </Button>
                 <Button colorScheme="red" onClick={() => markForDeletion(book.id)} height="30px">
@@ -149,20 +127,16 @@ function BookList() {
         </Tbody>
       </Table>
       <DeleteConfirmationModal
-        isOpen={deleteBookId !== null}
+        isOpen={deleteModal}
+        bookId={bookId}
         onClose={cancelDeletion}
-        bookName={deleteBookId !== null ? books.find((book) => book.id === deleteBookId)?.name : ""}
         onConfirm={confirmDeletion}
       />
       <EditBookModal
-        isOpen={editBookId !== null}
+        isOpen={isEditingBook}
         onClose={closeEditModal}
-        bookId={editBookId}
-        bookName={editBookName}
-        bookDescription={editBookDescription}
-        onBookNameChange={setEditBookName}
-        onBookDescriptionChange={setEditBookDescription}
-        onUpdate={updateBookDetails}
+        bookToEdit={bookToEdit}
+        userId={user?.sub}
       />
     </div>
   );

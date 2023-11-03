@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Center,
   Modal,
@@ -11,28 +11,43 @@ import {
   Button,
   Input,
 } from "@chakra-ui/react";
-
+import { UPDATE_BOOK } from "../../services/graphql";
+import { useMutation } from "@apollo/client";
 interface EditBookModalProps {
   isOpen: boolean;
   onClose: () => void;
-  bookId: number | null;
-  bookName: string;
-  bookDescription: string;
-  onBookNameChange: (value: string) => void;
-  onBookDescriptionChange: (value: string) => void;
-  onUpdate: () => void;
+  bookToEdit:any;
+  userId:string|undefined;
 }
 
 const EditBookModal: React.FC<EditBookModalProps> = ({
   isOpen,
   onClose,
-  bookId,
-  bookName,
-  bookDescription,
-  onBookNameChange,
-  onBookDescriptionChange,
-  onUpdate,
+ bookToEdit,
+  userId
 }) => {
+  const [updateBook] = useMutation(UPDATE_BOOK);
+
+  const [form,setForm]= useState({
+    title:bookToEdit.title,
+    description:bookToEdit.description,
+  })
+
+
+  const handleChange=(e:any)=>{
+    e.preventDefault();
+    setForm((prev)=>({...prev,[e.target.name]:e.target.value}))
+  }
+
+
+const onUpdate=async()=>{
+  await updateBook({
+    variables: { id:bookToEdit.id,...form, userId },
+  });
+  onClose()
+}
+
+
   return (
     <Modal isOpen={isOpen} onClose={onClose}>
       <ModalOverlay />
@@ -41,9 +56,16 @@ const EditBookModal: React.FC<EditBookModalProps> = ({
         <ModalCloseButton />
         <ModalBody>
           <Center>
-            <Input value={String(bookId)} isDisabled/>
-            <Input value={bookName} onChange={(e) => onBookNameChange(e.target.value)}/>
-            <Input value={bookDescription} onChange={(e) => onBookDescriptionChange(e.target.value)} />
+            {/* <Input value={String(bookId)} isDisabled/> */}
+          
+            <Input 
+            value={form.title}
+              name="title"
+              onChange={handleChange}/>
+            <Input 
+            value={form.description} 
+            name="description"
+            onChange={handleChange} />
           </Center>
         </ModalBody>
         <ModalFooter>
