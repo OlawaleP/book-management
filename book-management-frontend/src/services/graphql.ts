@@ -20,21 +20,22 @@ export const CREATE_BOOK = gql`
     title,
     description,
     userId        
-        }
+    }
 }
 `
 export const EDIT_BOOK=gql`
-    mutation{
-updateBook(id:2,title:$title,description:$description){
-  title,
-  description
-}
+    mutation
+    updateBook(title:String!,description: String!,userId:String!"){
+    updateBook(id:2,title:$title,description:$description){
+    title,
+    description
+    }
 }
 `
 export const DELETE_BOOK=gql`
     mutation
-deleteBook(id: id) {
-  deleteBook(id){
+    deleteBook(id: id) {
+    deleteBook(id){
     id
   }
 }
