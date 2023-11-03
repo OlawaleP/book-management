@@ -1,20 +1,19 @@
-import { Grid, GridItem, Show } from "@chakra-ui/react"
-import NavBar from "./components/NavBar"
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import SignUp from "./components/SignUp";
+import SignIn from "./components/SignIn";
+import Index from "./components/mainpage/Index";
 
 
 function App() {
-  return <Grid templateAreas={{
-    base: `"nav" "main"`,  // smaller devices
-    lg: `"nav nav" "aside main"` // Devices more than 1024
-  }}>
-    <GridItem area='nav'>
-      <NavBar />
-    </GridItem>
-    <Show above="lg">    
-    <GridItem area='aside'>Aside</GridItem>
-    </Show>
-    <GridItem area='main'>Main</GridItem>
-  </Grid>
+  return (
+    <Router>
+    <Routes>
+      <Route path="/signup" element={<SignUp/>} />
+      <Route path="/signin" element={<SignIn/>} />
+      <Route path="/" element={<Index/>} />
+      </Routes>
+    </Router>
+  )
 }
 
 export default App
